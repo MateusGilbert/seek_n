@@ -1,3 +1,122 @@
+#! /usr/bin/python3
+
+from typing import List, Tuple, Dict, Union, Callable
+import os
+import scipy.io as io
+import re
+import pandas as pd
+from collections import defaultdict
+import concurrent.futures as concurrent
+from itertools import repeat
+import numpy as np
+
+def rms(vals : Union[np.ndarray,List[Union[int,float]]]) -> Union[int,float]:
+    return np.sqrt((vals**2).mean())
+
+def merge_dicts(dicts : List[Dict]) -> Dict:
+    """Merge a list of dicts in a single dict"""
+    res = defaultdict(list)
+    for dictionary in dicts:
+        for key, values in dictionary.items():
+            if isinstance(values,list):
+                res[key].extend(values)
+            else:
+                res[key].append(values)
+    return res
+
+def ignore_keys(dictionary : Dict, keys : List) -> Dict:
+    if not isinstance(keys, (list, tuple)):
+        keys = [keys]
+    return {k: value for k,value in dictionary.items() if k not in keys}
+
+def get_signals(sent_signals : Union[List[str],str],
+                received_signals : Union[List[str],str],
+                path_dir : str ='.',
+                search_for : Union[str,Tuple[str]]=[]) -> Tuple[Tuple[List[float]]]:
+    """
+    Extract signals from sent and received log files.
+    obs.: path_dir carries the path to the files. Assumes that
+    files are stored in current directory.
+    """
+    signals = list()
+
+    if isinstance(sent_signals,str):
+        sent_signals,received_signals = [sent_signals], [received_signals]
+
+    for s,r in zip(sent_signals, received_signals):
+        sig_df = None
+        aux = io.loadmat(os.path.join(path_dir,s))
+        if isinstance(search_for,str):
+            search_for = [search_for, search_for]
+        if search_for[0]:
+            for k in aux.keys():
+                if re.search(search_for[0], k):
+                    key = k
+                    break
+        else:
+            key = list(aux.keys())[0]
+        sent = aux[key]
+        aux = io.loadmat(os.path.join(path_dir,r))
+        if search_for[1]:
+            for k in aux.keys():
+                if re.search(search_for[1], k):
+                    key = k
+                    break
+        else:
+            key = list(aux.keys())[0]
+        received = aux[key]
+        x_time,y_time = sent[0],received[0]
+
+        #check if received signals need shift
+        remove = 0
+        while (y_time[remove] < x_time[0]):
+            remove += 1
+        if remove:
+            y_time = y_time[remove:]
+            if len(x_time) > len(y_time):
+                x_time = x_time[:-remove]
+        for s,r in zip(sent[1:],received[1:]):
+            if remove:
+                r = r[remove:]
+                if len(s) > len(r):
+                    s = s[:-remove]
+            signals.append((s,r,x_time,y_time))
+
+    return tuple(signals)
+
+#turning mat files into csv
+
+def mat_2_pandas(mat_file : str) -> pd.DataFrame:
+    mat_file = io.loadmat(mat_file)
+
+    keys = mat_file.keys()
+    if len(keys) > 1:
+        temp_df = pd.DataFrame()
+        for key in keys:
+            result = mat_file.get(key)
+            if isinstance(result, np.ndarray):
+                df = pd.DataFrame(result.flatten(), columns=[key])
+                temp_df = pd.concat([temp_df, df], axis=1)
+        return temp_df
+    key = next(iter(keys))
+    return pd.DataFrame(mat_file.get(key).T)
+
+#for multi-threading
+def _to_csv(og_file : str, converter : Callable, columns : List[str] =[]) -> Tuple[bool,str]:
+    file_ext = og_file[og_file.rfind('.'):]
+    save_at = re.sub(file_ext, '.csv', og_file)
+    try:
+        df = converter(og_file)
+        if len(columns):
+            df.columns = columns
+        df.to_csv(save_at, index=False)
+    except:
+        if 'df' in locals():
+            del df
+        return False,save_at
+    del df
+    return True,save_at
+
 def comp_01(ref : str, gen : str, kwargs : Dict) -> Tuple[bool,str]:
     dirname = '/'.join(ref.split('/')[:-1])
     tr_file = os.path.join(dirname,'inst_tracking.csv')
