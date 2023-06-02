@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib as mplot
 import matplotlib.pyplot as pl
 from aux_functions import *
-from aux_pandas import load_interval
 import sig_cmp as sc
 from typing import List, Tuple, Dict, Union, Callable
 
