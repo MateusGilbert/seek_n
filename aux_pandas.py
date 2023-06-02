@@ -1,5 +1,3 @@
-#! /usr/bin/python3
-
 from typing import List, Tuple, Dict, Union, Callable
 import pandas as pd
 
@@ -29,10 +27,3 @@ def load_interval(filename : str, label : str, limits : Tuple, chunksize : int =
                         ])
 
     return df
-
-if __name__ == '__main__':
-    import os
-    filename = './antero/Tests/sfa_1ms/Opal01/inst_tracking.csv'
-    eps = 5e-3
-    df = load_interval(filename, label='t', limits=(5-eps,7+eps))
-    print(df)
