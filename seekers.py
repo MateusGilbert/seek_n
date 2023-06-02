@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib as mplot
 import matplotlib.pyplot as pl
 from aux_functions import *
-import sig_cmp as sc
 from typing import List, Tuple, Dict, Union, Callable
 
 def seek_n_compute_1(root_dir : str, ref_regex : re.Pattern, func : Callable, n_works : int =4, **kwargs) -> Tuple[List]:
@@ -67,6 +66,30 @@ def seek_n_compute_2(root_dir : str, ref_regex : re.Pattern, gen_regex : re.Patt
                 failed.append(name)
 
     return successful,failed
+
+def seek_n_convert(root_dir : str, file_regex : re.Pattern, converter : Callable, columns : List[str] = []) -> Tuple[List]:
+    files_2_convert = list()
+
+    if not isinstance(file_regex, re.Pattern):
+        file_regex = re.compile(file_regex)
+
+    for directory,_,files in os.walk(root_dir):
+        for filename in files:
+            filename = os.path.join(directory,filename)
+            if file_regex.match(filename):
+                files_2_convert.append(filename)
+
+    successful, failed = list(), list()
+    with concurrent.ThreadPoolExecutor(max_workers=4) as executor:
+        results = executor.map(_to_csv, files_2_convert, repeat(converter), repeat(columns))
+
+        for res, name in results:
+            if res:
+                successful.append(name)
+            else:
+                failed.append(name)
+
+    return successful, failed
 
 
 if __name__ == '__main__':
