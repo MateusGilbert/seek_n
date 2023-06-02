@@ -3,8 +3,9 @@ Programs that traverse through a source directory and its subdirectories, search
 
 ### seek_n_comp functions
 These functions search for files that meet a specific criteria, such as having the same suffix/prefix or matching a regex pattern. They then perform a desired action, defined by an user's function. There are two implementations:
-  (1) seek_n_comp_1 that works with a single file at a time;
-  (2) seek_n_comp_2 that works with two files, assuming that one of them is a reference file, whereas the other contains the data that we want to compare with the former.
+
+ * seek_n_comp_1 that works with a single file at a time;
+ * seek_n_comp_2 that works with two files, assuming that one of them is a reference file, whereas the other contains the data that we want to compare with the former.
 
 ### seek_n_convert function
 Thiis function is similar to the one above, but is tailored to file conversion.
