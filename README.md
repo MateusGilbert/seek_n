@@ -8,7 +8,7 @@ These functions search for files that meet a specific criteria, such as having t
  * seek_n_comp_2 that works with two files, assuming that one of them is a reference file, whereas the other contains the data that we want to compare with the former.
 
 ### seek_n_convert function
-Thiis function is similar to the one above, but is tailored to file conversion.
+This function is similar to the one above, but is tailored to file conversion.
 
 ### aux_functions
 This module contains the implementations of functions that are compatible with the "seek_n_comp" functions. It is important to ensure that all functions adhere to the specified variable structure present in these functions. If one desires to employ a function that doesn't follow this structure, modifications must be made to the "seeker" functions at the locations where the functions are called.
