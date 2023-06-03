@@ -117,6 +117,8 @@ def _to_csv(og_file : str, converter : Callable, columns : List[str] =[]) -> Tup
     del df
     return True,save_at
 
+#The functions below can be used with the 'seek' functions
+
 def comp_01(ref : str, gen : str, kwargs : Dict) -> Tuple[bool,str]:
     dirname = '/'.join(ref.split('/')[:-1])
     tr_file = os.path.join(dirname,'inst_tracking.csv')
