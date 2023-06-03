@@ -23,7 +23,7 @@ def seek_n_compute_1(root_dir : str, ref_regex : re.Pattern, func : Callable, n_
 
     successful,failed = list(),list()
     kwargss = [kwargs for _ in range(len(files))]
-    with concurrent.ThreadPoolExecutor(max_workers=n_works) as executor:
+    with concurrent.ProcessPoolExecutor(max_workers=n_works) as executor:
         results = executor.map(func, ex_files, kwargss)
 
         for res, name in results:
@@ -56,7 +56,7 @@ def seek_n_compute_2(root_dir : str, ref_regex : re.Pattern, gen_regex : re.Patt
 
     successful,failed = list(),list()
     kwargss = [kwargs for _ in range(len(ref_files))]
-    with concurrent.ThreadPoolExecutor(max_workers=n_works) as executor:
+    with concurrent.ProcessPoolExecutor(max_workers=n_works) as executor:
         results = executor.map(func, ref_files, gen_files, kwargss)
 
         for res, name in results:
